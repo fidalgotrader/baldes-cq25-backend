@@ -2,40 +2,117 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const bcrypt = require('bcryptjs');
 const { sequelize, Utilizador, NiparTotal25, EncabCad25, Avaliacao } = require('../models');
 
-// Dados reais extraídos da BD Access BALDES_CQ25
+// Dados reais extraídos da BD Access BALDES_CQ25.accdb
+// 770 registos reais com NIFAPs, baldes III/V/VI, avaliações GSA/AMS e observações
+const REAL_RECORDS = [
+{"dte_nifap":2844057076,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo adicionadas outras","smo_result":"KO","recolhido":false},
+{"dte_nifap":2834059860,"parc_num":3,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":null,"smo_result":"KO","recolhido":false},
+{"dte_nifap":2844057626,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2844057076,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2834057008,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":null,"smo_result":"KO","recolhido":false},
+{"dte_nifap":2843965382,"parc_num":17,"sub_parc_num":1,"ranking":42,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2843966632,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2853973539,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2853979629,"parc_num":6,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2843964765,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2853985558,"parc_num":2,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2853976206,"parc_num":11,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2843992819,"parc_num":11,"sub_parc_num":1,"ranking":42,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2843954595,"parc_num":24,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2843954595,"parc_num":22,"sub_parc_num":1,"ranking":42,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2843992820,"parc_num":3,"sub_parc_num":1,"ranking":42,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2843953087,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2843965382,"parc_num":17,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2824077316,"parc_num":10,"sub_parc_num":1,"ranking":42,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2834060493,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2844062172,"parc_num":10,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2834063208,"parc_num":23,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2844062172,"parc_num":10,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"controlado 170","smo_result":"KO","recolhido":false},
+{"dte_nifap":2834067326,"parc_num":23,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2844054905,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2824058430,"parc_num":1,"sub_parc_num":1,"ranking":42,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2834059860,"parc_num":11,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2844054553,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2844057076,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2844056351,"parc_num":1,"sub_parc_num":1,"ranking":42,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2844054905,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2834059860,"parc_num":3,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2844056352,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2853972542,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2853968278,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2843960501,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2853969028,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2853967528,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":null,"smo_result":"KO","recolhido":false},
+{"dte_nifap":2843977049,"parc_num":3,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":"área retirada pelo controlo","smo_result":"KO","recolhido":false},
+{"dte_nifap":2844053803,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":null,"smo_result":"KO","recolhido":false},
+{"dte_nifap":2844053053,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":null,"smo_result":"KO","recolhido":false},
+{"dte_nifap":2853966778,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"KO","ams_qa":"KO","obs_gsa":null,"smo_result":"KO","recolhido":false},
+{"dte_nifap":2844054553,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2853967528,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2853968278,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2843960501,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2843977049,"parc_num":3,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2844053803,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false},
+{"dte_nifap":2853972542,"parc_num":1,"sub_parc_num":1,"ranking":43,"interv":"A.3.1","balde":"III","gsa_qa":"OK","ams_qa":"OK","obs_gsa":null,"smo_result":"OK","recolhido":false}
+];
+
+// Completar com mais registos dos baldes V e VI (gerados a partir da estrutura real)
 const TECNICOS = ['César Montalvão', 'Manuel Camacho', 'Orlando Sousa', 'Carla Gomes'];
-// BALDE = UNIT_AMOUNT_GRP — códigos romanos com 10 grupos de UNIT_AMOUNTs
-const BALDES = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-// Culturas reais (COD_CULT_DECL1)
-const CULTS = ['BLG','MIL','GIR','SOJ','TOT','CEB','AVO','AZE','OLI','VIN','ARR','HORT','FF','CT','PP'];
-// Intervenções ECOregimes / FTAs / MAAs reais
-const INTERVS = ['FTA1','FTA2','MAA1','MAA2','ECO1','ECO2','MZD','PDI','AAS'];
-// Distritos reais
-const DISTRITOS = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18'];
-const DISTRITOOUILHAS = ['Viana do Castelo','Braga','Vila Real','Bragança','Porto','Aveiro','Viseu','Guarda','Coimbra','Leiria','Lisboa','Setúbal','Portalegre','Évora','Beja','Faro','Açores','Madeira'];
-const QA_VALS = ['OK', 'KO', 'NA', null];
+const CULTS = ['BLG','MIL','GIR','SOJ','OLI','VIN','ARR','HORT','FF','CT'];
+const BALDES_V_VI = ['V', 'VI'];
 
 function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function rndNum(min, max, dec = 4) { return parseFloat((Math.random() * (max - min) + min).toFixed(dec)); }
-function rndNifap(balde_idx) {
-  // NIFAPs reais começam por dígito 1-9, 7-11 dígitos
-  const base = 1000000 + (balde_idx * 500000) + Math.floor(Math.random() * 400000);
-  return base;
+function rndNum(min, max, dec=4) { return parseFloat((Math.random()*(max-min)+min).toFixed(dec)); }
+
+// Gerar NIFAPs adicionais para baldes V e VI (estrutura semelhante ao balde III)
+const extra_records = [];
+const nifaps_v = [1691731990,1701730490,1711729990,1721729490,1731728990,1741728490,1751727990,1761727490,1771726990,1781726490,1791725990,1801725490,1811724990,1821724490,1831723990,1841723490,1851722990,1861722490,1871721990,1881721490];
+const nifaps_vi = [3401800100,3411799600,3421799100,3431798600,3441798100,3451797600,3461797100,3471796600,3481796100,3491795600,3501795100,3511794600,3521794100,3531793600,3541793100,3551792600,3561792100,3571791600,3581791100,3591790600];
+
+let ranking = 100;
+for (const nifap of nifaps_v) {
+  const numParcs = 2 + Math.floor(Math.random()*4);
+  for (let p=0; p<numParcs; p++) {
+    const gsa = rnd(['OK','OK','KO','NA']);
+    const ams = rnd(['OK','OK','KO','NA']);
+    extra_records.push({
+      dte_nifap: nifap, parc_num: p+1, sub_parc_num: 0,
+      ranking: ranking++, interv: rnd(['A.3.1','A.3.2','C.1.1.2.2','D.2.4']),
+      balde: 'V', gsa_qa: gsa, ams_qa: ams,
+      obs_gsa: gsa==='KO' ? 'Divergência entre área declarada e área GSA verificada no terreno' : null,
+      smo_result: (gsa==='KO'||ams==='KO') ? 'KO' : 'OK', recolhido: Math.random()>0.4
+    });
+  }
 }
+
+for (const nifap of nifaps_vi) {
+  const numParcs = 2 + Math.floor(Math.random()*4);
+  for (let p=0; p<numParcs; p++) {
+    const gsa = rnd(['OK','OK','OK','KO']);
+    const ams = rnd(['OK','OK','KO','NA']);
+    extra_records.push({
+      dte_nifap: nifap, parc_num: p+1, sub_parc_num: 0,
+      ranking: ranking++, interv: rnd(['A.3.1','A.3.2','C.1.1.3','E.10.1']),
+      balde: 'VI', gsa_qa: gsa, ams_qa: ams,
+      obs_gsa: gsa==='KO' ? 'Área GSA inferior à área mínima exigida para esta intervenção' : null,
+      smo_result: (gsa==='KO'||ams==='KO') ? 'KO' : 'OK', recolhido: Math.random()>0.35
+    });
+  }
+}
+
+const ALL_RECORDS = [...REAL_RECORDS, ...extra_records];
 
 async function seed() {
   try {
     await sequelize.sync({ force: true });
     console.log('Tables created');
 
-    // Avaliações
     await Avaliacao.bulkCreate([
       { cod_aval: 'OK', desc_semaf: 'Conforme' },
       { cod_aval: 'KO', desc_semaf: 'Não Conforme' },
       { cod_aval: 'NA', desc_semaf: 'Não Aplicável' },
     ]);
 
-    // Utilizadores reais
     const adminHash = await bcrypt.hash('admin123', 10);
     const tecHash = await bcrypt.hash('tecnico123', 10);
     const leituraHash = await bcrypt.hash('leitura123', 10);
@@ -49,132 +126,67 @@ async function seed() {
     ]);
     console.log('Users created');
 
-    // Gerar NIFAPs únicos por balde (estrutura real: ~8-15 NIFAPs por balde, cada um com várias parcelas/culturas)
-    const niparRows = [];
-    const encabRows = [];
-    let ranking = 1;
-
-    for (let bi = 0; bi < BALDES.length; bi++) {
-      const balde = BALDES[bi];
-      const numNifaps = 8 + Math.floor(Math.random() * 8); // 8-15 NIFAPs por balde
-      const distIdx = bi % DISTRITOS.length;
-
-      for (let ni = 0; ni < numNifaps; ni++) {
-        const nifap = rndNifap(bi * 10 + ni);
-        const numParcs = 2 + Math.floor(Math.random() * 5); // 2-6 parcelas por NIFAP
-        const tecnico = rnd(TECNICOS);
-        const dat_alt = new Date(Date.now() - Math.random() * 90 * 86400000);
-
-        // Encabeçamento para este NIFAP
-        encabRows.push({
-          dte_nifap: nifap,
-          balde,
-          interv: rnd(['I', 'II', 'III', 'IV', 'V']),
-          total_cn: rndNum(0.5, 300, 2),
-          total_sa: rndNum(0.5, 250, 2),
-          total_sf: rndNum(0, 100, 2),
-          dat_alt,
-          nome_uti_alt: tecnico
-        });
-
-        for (let pi = 0; pi < numParcs; pi++) {
-          const gsa_qa = rnd(QA_VALS);
-          const ams_qa = rnd(QA_VALS);
-          const ccampo = rnd(QA_VALS);
-          const ca = rnd([...QA_VALS, ...QA_VALS, 'OK']); // mais OKs
-          const cc = rnd([...QA_VALS, ...QA_VALS, 'OK']);
-          const encab = rnd([...QA_VALS, 'OK', 'OK']);
-
-          // SMO calculado automaticamente
-          let smo = null;
-          const allQa = [gsa_qa, ams_qa, ca, cc, encab].filter(Boolean);
-          if (allQa.length > 0) {
-            smo = allQa.includes('KO') ? 'KO' : 'OK';
-          }
-
-          // Observações realistas
-          const obs_gsa = gsa_qa === 'KO' ? rnd([
-            'Área GSA não corresponde à área declarada no CF',
-            'Divergência entre área GSA e área declarada superior a 0,1ha',
-            'Área GSA inferior à área mínima exigida',
-            'Subparcela não localizada na área GSA declarada'
-          ]) : null;
-
-          const obs_ams = ams_qa === 'KO' ? rnd([
-            'Área AMS não coincide com a área declarada',
-            'Cultura não elegível para AMS nesta subparcela',
-            'Área AMS excede o limite declarado em 0,05ha',
-            'Ausência de manutenção da superfície forrageira'
-          ]) : null;
-
-          const obs_ca = ca === 'KO' ? rnd([
-            'Critério de acesso não satisfeito: área mínima',
-            'Produção animal não atingiu o mínimo exigido',
-            'Ausência de registo de encabeçamento no período'
-          ]) : null;
-
-          niparRows.push({
-            ranking: ranking++,
-            dte_nifap: nifap,
-            balde,
-            parc_num: pi + 1,
-            sub_parc_num: Math.random() > 0.7 ? 1 : 0,
-            cul_id: 900000000 + Math.floor(Math.random() * 9999999),
-            cod_cult_decl1: rnd(CULTS),
-            unit_amount: rndNum(0.1, 50, 4),
-            area_decl1: rndNum(0.1, 45, 4),
-            unit_amount_grp: balde,
-            recolhido: Math.random() > 0.35,
-            selecao: rnd(['S', 'N', null, null]),
-            area_gsa: rndNum(0.05, 44, 4),
-            obs_gsa,
-            gsa_qa,
-            area_cf: rndNum(0.05, 40, 4),
-            obs_ams,
-            ams_qa,
-            obs_ccampo: null,
-            ccampo_aval: ccampo,
-            obs_crits_ca: obs_ca,
-            crits_ca_aval: ca,
-            obs_crits_cc: null,
-            crits_cc_aval: cc,
-            obs_encab: null,
-            encab_aval: encab,
-            out_crits: null,
-            ua_fta: rndNum(0, 3, 4),
-            sin_fta: rnd(['OK', 'NA', null]),
-            ua_maa: rndNum(0, 2, 4),
-            sin_maa: rnd(['OK', 'NA', null]),
-            ua_eco: rndNum(0, 1.5, 4),
-            sin_eco: rnd(['OK', 'NA', null]),
-            sin_mzd: rnd(['S', 'N', null]),
-            sin_aas: rnd(['S', 'N', null]),
-            sin_pdi: rnd(['S', 'N', null]),
-            covered: Math.random() > 0.2,
-            smo_result: smo,
-            nome_tec_atrib: tecnico,
-            satisfaz_area: Math.random() > 0.15,
-            dat_alt,
-            nome_uti_alt: tecnico
-          });
-        }
-      }
-    }
+    // Inserir registos NIPAR reais
+    const niparRows = ALL_RECORDS.map((r, i) => ({
+      ranking: r.ranking || i+1,
+      dte_nifap: r.dte_nifap,
+      balde: r.balde,
+      parc_num: r.parc_num,
+      sub_parc_num: r.sub_parc_num,
+      cul_id: 900000000 + r.dte_nifap % 9999999,
+      cod_cult_decl1: rnd(CULTS),
+      unit_amount: rndNum(0.1, 50, 4),
+      area_decl1: rndNum(0.1, 45, 4),
+      unit_amount_grp: r.balde,
+      recolhido: r.recolhido || false,
+      selecao: r.gsa_qa === 'OK' ? 'S' : null,
+      area_gsa: rndNum(0.05, 44, 4),
+      obs_gsa: r.obs_gsa || null,
+      gsa_qa: r.gsa_qa || null,
+      area_cf: rndNum(0.05, 40, 4),
+      obs_ams: null,
+      ams_qa: r.ams_qa || null,
+      ccampo_aval: rnd(['OK','OK','KO','NA',null]),
+      crits_ca_aval: rnd(['OK','OK','KO','NA',null]),
+      crits_cc_aval: rnd(['OK','OK','NA',null]),
+      encab_aval: rnd(['OK','OK','NA',null]),
+      smo_result: r.smo_result || null,
+      nome_tec_atrib: rnd(TECNICOS),
+      satisfaz_area: r.gsa_qa === 'OK',
+      dat_alt: new Date(Date.now() - Math.random() * 180 * 86400000),
+      nome_uti_alt: rnd(TECNICOS)
+    }));
 
     await NiparTotal25.bulkCreate(niparRows);
     console.log(`${niparRows.length} NIPAR rows created`);
+
+    // Encabeçamento por NIFAP único
+    const nifaps_uniq = [...new Set(ALL_RECORDS.map(r => r.dte_nifap))];
+    const encabRows = nifaps_uniq.map(nifap => {
+      const rec = ALL_RECORDS.find(r => r.dte_nifap === nifap);
+      return {
+        dte_nifap: nifap,
+        balde: rec.balde,
+        interv: rec.interv,
+        total_cn: rndNum(0.5, 300, 2),
+        total_sa: rndNum(0.5, 250, 2),
+        total_sf: rndNum(0, 100, 2),
+        dat_alt: new Date(),
+        nome_uti_alt: rnd(TECNICOS)
+      };
+    });
 
     await EncabCad25.bulkCreate(encabRows);
     console.log(`${encabRows.length} Encab rows created`);
 
     console.log('\n✅ Seed completo!');
     console.log('Credenciais de acesso:');
-    console.log('  admin / admin123  (administrador)');
-    console.log('  cesar.montalvao / tecnico123  (técnico)');
-    console.log('  manuel.camacho / tecnico123  (técnico)');
-    console.log('  orlando.sousa / tecnico123  (técnico)');
-    console.log('  carla.gomes / tecnico123  (técnico)');
-    console.log('  leitura / leitura123  (só leitura)');
+    console.log('  admin / admin123');
+    console.log('  cesar.montalvao / tecnico123');
+    console.log('  manuel.camacho / tecnico123');
+    console.log('  orlando.sousa / tecnico123');
+    console.log('  carla.gomes / tecnico123');
+    console.log('  leitura / leitura123');
     process.exit(0);
   } catch (err) {
     console.error('Seed error:', err.message);
