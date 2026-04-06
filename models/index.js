@@ -1,24 +1,19 @@
 const { Sequelize } = require('sequelize');
 
-const dbUrl = process.env.DATABASE_URL;
+const raw = process.env.DATABASE_URL || '';
+console.log('DATABASE_URL length:', raw.length);
+console.log('DATABASE_URL starts with:', raw.substring(0, 15) || '(EMPTY)');
 
-if (!dbUrl) {
-  console.error('ERROR: DATABASE_URL not set');
+if (!raw || raw.length < 10) {
+  console.error('ERRO: DATABASE_URL nao esta configurada!');
   process.exit(1);
 }
 
-// Railway uses "postgres://" but Sequelize needs "postgresql://"
-const normalizedUrl = dbUrl.startsWith('postgres://') && !dbUrl.startsWith('postgresql://')
-  ? dbUrl.replace('postgres://', 'postgresql://')
-  : dbUrl;
+const url = raw.replace(/^postgres:\/\//, 'postgresql://');
 
-console.log('Connecting to DB host:', normalizedUrl.split('@')[1]?.split('/')[0] || 'unknown');
-
-const sequelize = new Sequelize(normalizedUrl, {
+const sequelize = new Sequelize(url, {
   dialect: 'postgres',
-  dialectOptions: {
-    ssl: { require: true, rejectUnauthorized: false }
-  },
+  dialectOptions: { ssl: { require: true, rejectUnauthorized: false } },
   logging: false
 });
 
